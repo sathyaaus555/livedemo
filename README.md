@@ -12,6 +12,12 @@ Open http://localhost:3000 and enter any demo username and password. The login i
 npm test
 ```
 
-Three tests pass and one test intentionally fails: v1 permits a $1,500 transfer from an account with $1,000. The failing test exposes the missing balance validation for the keynote demonstration.
+Four tests pass and one test intentionally fails: v1 permits a $1,500 transfer from an account with $1,000. The failing test exposes the missing balance validation for the keynote demonstration. `npm test` therefore exits with code 1 by design; the test is active, not skipped. API coverage also checks the login page, assets, initial balances, successful transfers, invalid requests, and unchanged balances after rejected transfers.
+
+To run only the API checks:
+
+```bash
+node --test server.test.js
+```
 
 In Windows PowerShell, if `npm.ps1` is blocked, use `npm.cmd start` and `npm.cmd test`.

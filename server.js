@@ -1,15 +1,16 @@
 import { createServer } from 'node:http';
 import { readFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
-import { dirname, join } from 'node:path';
+import { dirname, join, resolve } from 'node:path';
 import { createBank } from './bank.js';
 
-const bank = createBank();
 const root = dirname(fileURLToPath(import.meta.url));
 const assets = { '/': ['index.html', 'text/html'], '/app.js': ['app.js', 'text/javascript'], '/style.css': ['style.css', 'text/css'] };
 const port = Number(process.env.PORT || 3000);
 
-const server = createServer(async (req, res) => {
+export function createBankServer() {
+const bank = createBank();
+return createServer(async (req, res) => {
   const send = (status, value) => { res.writeHead(status, { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store' }); res.end(JSON.stringify(value)); };
   if (req.url === '/api/accounts' && req.method === 'GET') return send(200, bank.accounts());
   if (req.url === '/api/transfer' && req.method === 'POST') {
@@ -27,4 +28,8 @@ const server = createServer(async (req, res) => {
   send(404, { error: 'Not found.' });
 });
 
-server.listen(port, () => console.log(`ABC Bank running at http://localhost:${port}`));
+}
+
+if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
+  createBankServer().listen(port, () => console.log(`ABC Bank running at http://localhost:${port}`));
+}

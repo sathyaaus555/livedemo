@@ -5,6 +5,7 @@ const dashboard = $('#dashboard');
 
 async function refresh() {
   const response = await fetch('/api/accounts');
+  if (!response.ok) throw new Error('Unable to load accounts. Please try again.');
   render(await response.json());
 }
 function render(accounts) {
@@ -21,11 +22,20 @@ function render(accounts) {
 $('#login-form').addEventListener('submit', async (event) => {
   event.preventDefault();
   $('#greeting').textContent = $('#username').value.trim() || 'there';
-  await refresh(); login.hidden = true; dashboard.hidden = false;
+  const button = event.submitter;
+  button.disabled = true;
+  $('#login-message').textContent = '';
+  try {
+    await refresh(); login.hidden = true; dashboard.hidden = false;
+  } catch (error) {
+    $('#login-message').textContent = error.message || 'Unable to sign in. Please try again.';
+  } finally { button.disabled = false; }
 });
 $('#logout').addEventListener('click', () => { dashboard.hidden = true; login.hidden = false; $('#password').value = ''; $('#message').textContent = ''; });
 $('#transfer-form').addEventListener('submit', async (event) => {
   event.preventDefault();
+  const button = event.submitter;
+  button.disabled = true;
   const message = $('#message'); message.textContent = ''; message.classList.remove('error');
   try {
     const response = await fetch('/api/transfer', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ from: $('#from').value, to: $('#to').value, amount: $('#amount').value }) });
@@ -33,4 +43,5 @@ $('#transfer-form').addEventListener('submit', async (event) => {
     if (!response.ok) throw new Error(result.error);
     render(result.accounts); message.textContent = result.message; $('#amount').value = '';
   } catch (error) { message.classList.add('error'); message.textContent = error.message || 'Transfer failed.'; }
+  finally { button.disabled = false; }
 });
